@@ -1,0 +1,35 @@
+{
+  "name": "swipe_assignment",
+  "version": "1.0.0",
+  "description": "My swipe internship assignment",
+  "main": "app.js",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youngineer/swipe_assignment.git"
+  },
+  "keywords": [
+    "Swipe",
+    "Kartik"
+  ],
+  "author": "Kartik S",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/youngineer/swipe_assignment/issues"
+  },
+  "homepage": "https://github.com/youngineer/swipe_assignment#readme",
+  "devDependencies": {
+    "parcel": "^2.13.0",
+    "process": "^0.11.10",
+    "tailwindcss": "^3.4.15"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  }
+}

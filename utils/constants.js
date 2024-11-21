@@ -1,0 +1,1 @@
+export const LOGO_URL = "https://images.yourstory.com/cs/images/companies/Group26-1638771123879.png?fm=auto&ar=1%3A1&mode=fill&fill=solid&fill-color=fff&format=auto&w=384&q=75";

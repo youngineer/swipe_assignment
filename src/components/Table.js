@@ -1,41 +1,88 @@
-const Table = (props) => {
-  console.log(props);
+import * as React from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import { columnConfigs } from '../../utils/constants';
 
+export default function Table(rowList, entity) {
   return (
-    <div class="overflow-x-auto shadow-md rounded-lg">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-        <thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-          <tr>
-            <th class="px-6 py-3">Customer</th>
-            <th class="px-6 py-3">Invoice #</th>
-            <th class="px-6 py-3">Amount</th>
-            <th class="px-6 py-3">Period</th>
-            <th class="px-6 py-3">Due</th>
-            <th class="px-6 py-3">Created</th>
-            <th class="px-6 py-3 text-right">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="bg-white border-b dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <th class="px-6 py-4 font-medium text-gray-900 dark:text-white">
-              Apple MacBook Pro 17"
-            </th>
-            <td class="px-6 py-4">Silver</td>
-            <td class="px-6 py-4">Laptop</td>
-            <td class="px-6 py-4">$2999</td>
-            <td class="px-6 py-4 text-right">
-              <a
-                href="#"
-                class="text-blue-600 dark:text-blue-500 hover:underline"
-              >
-                Edit
-              </a>
-            </td>
-          </tr>
-          </tbody>
-      </table>
+    <div style={{ height: 300, width: '100%' }}>
+      <DataGrid editMode="row" rows={rowList} columns={columnConfigs[entity]} />
     </div>
   );
-};
+}
 
-export default Table;
+const columnConfigs = {
+  customer: [
+    { field: 'id', header: 'ID', width: 'w-20' },
+    { field: 'name', header: 'Customer Name', width: 'w-48' },
+    { field: 'phone', header: 'Phone', width: 'w-40' },
+    { 
+      field: 'totalPurchase', 
+      header: 'Total Purchase', 
+      width: 'w-40',
+      format: (value) => `$${value.toFixed(2)}`
+    }
+  ],
+  product: [
+    { field: 'name', header: 'Product Name', width: 'w-48' },
+    { 
+      field: 'quantity', 
+      header: 'Quantity', 
+      width: 'w-32',
+      format: (value) => value.toString()
+    },
+    { 
+      field: 'unitPrice', 
+      header: 'Unit Price', 
+      width: 'w-32',
+      format: (value) => `$${value.toFixed(2)}`
+    },
+    { 
+      field: 'tax', 
+      header: 'Tax (%)', 
+      width: 'w-32',
+      format: (value) => `${value}%`
+    },
+    { 
+      field: 'priceWithTax', 
+      header: 'Price with Tax', 
+      width: 'w-40',
+      format: (value) => `$${value.toFixed(2)}`
+    }
+  ],
+  invoice: [
+    { field: 'id', header: 'ID', width: 'w-20' },
+    { field: 'serialNumber', header: 'Serial Number', width: 'w-40' },
+    { field: 'customerName', header: 'Customer', width: 'w-48' },
+    { field: 'productName', header: 'Product', width: 'w-48' },
+    { 
+      field: 'quantity', 
+      header: 'Quantity', 
+      width: 'w-32',
+      format: (value) => value.toString()
+    },
+    { 
+      field: 'price', 
+      header: 'Price', 
+      width: 'w-32',
+      format: (value) => `$${value.toFixed(2)}`
+    },
+    { 
+      field: 'taxAmount', 
+      header: 'Tax', 
+      width: 'w-32',
+      format: (value) => `$${value.toFixed(2)}`
+    },
+    { 
+      field: 'totalPrice', 
+      header: 'Total', 
+      width: 'w-40',
+      format: (value) => `$${value.toFixed(2)}`
+    },
+    { 
+      field: 'date', 
+      header: 'Date', 
+      width: 'w-40',
+      format: (value) => new Date(value).toLocaleDateString()
+    }
+  ]
+};

@@ -24,8 +24,11 @@ export const fetchApiResult = async (file, apiKey) => {
             },
             PROMPT,
           ]);
-          resolve(result.response.text());
-          return handleAiResponse(result.response.text());
+          // resolve(result.response.text());
+          const jsonObj = handleAiResponse(result.response.text());
+          console.log("Back to fetchApiOutput with: ", jsonObj);
+          resolve(jsonObj);
+          return jsonObj;
         } catch (error) {
           console.error("Error generating content:", error);
           reject(error);
@@ -75,9 +78,10 @@ export const fetchApiResult = async (file, apiKey) => {
         const response = result.response.text();
         console.log("AiOp:", result.response.text())
         // handleAiResponse(response, dispatch);
-        resolve(response);
+        // resolve(response);
         const jsonObj = handleAiResponse(result.response.text());
         console.log("Back to fetchApiOutput with: ", jsonObj);
+        resolve(jsonObj);
         return jsonObj;
   
       } catch (error) {

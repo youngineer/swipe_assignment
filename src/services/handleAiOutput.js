@@ -1,26 +1,41 @@
 export const handleAiResponse = (text) => {
-  console.log("inside handleAiOp");
+  console.log("Inside handleAiResponse");
   try {
+    // Find the first `{` and the last `}` to locate the JSON segment
     const jsonStart = text.indexOf("{");
     const jsonEnd = text.lastIndexOf("}") + 1;
 
-    if (jsonStart === -1 || jsonEnd === -1) return null;
+    if (jsonStart === -1 || jsonEnd === -1) {
+      console.warn("No valid JSON structure found.");
+      return {};
+    }
 
-    // Extract the JSON string and clean it
+    // Extract the JSON string
     let jsonString = text.slice(jsonStart, jsonEnd);
+
+    // Clean the JSON string
     jsonString = jsonString
-      .replace(/\/\/.*/g, "")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/,(\s*[}\]])/g, "$1")
+      .replace(/\/\/.*/g, "") // Remove single-line comments
+      .replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+      .replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
       .trim();
 
-    console.log("Cleaned JSON string:", jsonString);
-    return JSON.parse(jsonString);
+    // Ensure the string starts with '{' and ends with '}'
+    if (!jsonString.startsWith("{")) jsonString = "{" + jsonString;
+    if (!jsonString.endsWith("}")) jsonString += "}";
+
+    // Parse the cleaned JSON string
+    const parsedJson = JSON.parse(jsonString);
+    console.log("Parsed JSON:", parsedJson);
+    return parsedJson;
   } catch (error) {
     console.error("Error parsing JSON:", error);
-    return null;
+
+    // Fallback to a default JSON object
+    return {};
   }
 };
+
 
 export const validateJsonObj = async (
   jsonObj,

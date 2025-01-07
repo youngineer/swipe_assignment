@@ -15,6 +15,7 @@ const Product = () => {
   const [rowModesModel, setRowModesModel] = useState({});
   const [editedRows, setEditedRows] = useState({});
 
+
   const handleEditClick = (id) => () => {
     const rowToEdit = rows.find(row => row.id === id);
     setEditedRows(prev => ({

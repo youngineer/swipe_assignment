@@ -41,7 +41,7 @@ export const PROMPT = `You are an intelligent file-processing system designed to
    - Product Name: Complete product description
    - Quantity: Total units purchased
    - Tax: Applicable tax percentage
-   - Total Amount: Final amount including tax
+   - Total Amount: Final amount including tax(unit Price * (1 + tax / 100))
    - Date: Format as YYYY/MM/DD
 
 2. Products Table Requirements:
@@ -49,7 +49,7 @@ export const PROMPT = `You are an intelligent file-processing system designed to
    - Quantity: Total units available/sold
    - Unit Price: Base price before tax
    - Tax: Applicable tax percentage
-   - Price with Tax: Final price including tax
+   - Price with Tax: Final price including tax(unit Price * (1 + tax / 100))
    - Sort by product name alphabetically
 
 3. Customers Table Requirements:

@@ -1,11 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialInvoiceState = {
-  getById: {},
-  allIds: [],
-  nextId: 1,
-  productMap: {},
-  customerMap: {},
+  getById: {}, // Stores all invoices by ID
+  allIds: [], // Tracks the list of all invoice IDs
+  nextId: 1, // Auto-increment ID for new invoices
+  productMap: {}, // Maps product IDs to invoice IDs
+  customerMap: {}, // Maps customer IDs to invoice IDs
 };
 
 const invoicesSlice = createSlice({
@@ -23,11 +23,12 @@ const invoicesSlice = createSlice({
         totalPrice,
         date,
         customerId,
-        productId
+        productId,
       } = action.payload;
 
       const id = state.nextId;
 
+      // Create the new invoice
       state.getById[id] = {
         id,
         serialNumber,
@@ -39,18 +40,22 @@ const invoicesSlice = createSlice({
         totalPrice,
         date,
         customerId,
-        productId
+        productId,
       };
 
+      // Add the new invoice ID to the list of all IDs
       state.allIds.push(id);
+
+      // Increment the nextId counter
       state.nextId += 1;
 
-      // Update relationship maps
+      // Update the customer-invoice relationship map
       if (!state.customerMap[customerId]) {
         state.customerMap[customerId] = [];
       }
       state.customerMap[customerId].push(id);
 
+      // Update the product-invoice relationship map
       if (!state.productMap[productId]) {
         state.productMap[productId] = [];
       }
@@ -58,12 +63,12 @@ const invoicesSlice = createSlice({
     },
 
     updateInvoiceCustomerName: (state, action) => {
-      console.log("customers received to invoice:", action.payload);
       const { id, customerName } = action.payload;
+
+      // Update all invoices associated with the customer
       if (state.customerMap[id]) {
-        state.customerMap[id].forEach(invoiceId => {
+        state.customerMap[id].forEach((invoiceId) => {
           if (state.getById[invoiceId]) {
-            console.log('state.getById[invoiceId].customerName:', state.getById[invoiceId].customerName)
             state.getById[invoiceId].customerName = customerName;
           }
         });
@@ -71,11 +76,12 @@ const invoicesSlice = createSlice({
     },
 
     updateInvoiceProductDetails: (state, action) => {
-      console.log("products received to invoice:", action.payload);
+      console.log("payloadAction:", action.payload)
       const { productId, name, unitPrice, tax } = action.payload;
-      console.log('productId, name, unitPrice, tax:', productId, name, unitPrice, tax );
+
+      // Update all invoices associated with the product
       if (state.productMap[productId]) {
-        state.productMap[productId].forEach(invoiceId => {
+        state.productMap[productId].forEach((invoiceId) => {
           if (state.getById[invoiceId]) {
             const invoice = state.getById[invoiceId];
             invoice.productName = name;
@@ -104,12 +110,12 @@ const invoicesSlice = createSlice({
         }
       });
 
-      // If quantity, price, or tax was updated, recalculate totalPrice
+      // Recalculate totalPrice if quantity, price, or tax was updated
       if (updates.quantity || updates.price || updates.tax) {
         invoice.totalPrice = (invoice.price + invoice.tax) * invoice.quantity;
       }
     },
-  }
+  },
 });
 
 export const {

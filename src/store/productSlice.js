@@ -15,46 +15,26 @@ const productsSlice = createSlice({
       const { name, quantity, unitPrice, tax } = action.payload;
       const id = state.nextId;
       const priceWithTax = (unitPrice + tax) * quantity;
-      
-      state.getById[id] = {
-        id,
-        name,
-        quantity,
-        unitPrice,
-        tax,
-        priceWithTax
-      };
+
+      state.getById[id] = { id, name, quantity, unitPrice, tax, priceWithTax };
       state.allIds.push(id);
       state.nextId += 1;
     },
-
     updateProduct: (state, action) => {
       const { id, name, quantity, unitPrice, tax } = action.payload;
       if (state.getById[id]) {
         const priceWithTax = (unitPrice + tax) * quantity;
-        state.getById[id] = {
-          id,
-          name,
-          quantity,
-          unitPrice,
-          tax,
-          priceWithTax
-        };
+        state.getById[id] = { id, name, quantity, unitPrice, tax, priceWithTax };
       }
     },
-  }
+  },
 });
 
-export const {
-  addProduct,
-  updateProduct,
-} = productsSlice.actions;
-
-// Thunk for updating product with invoice sync
-export const updateProductWithInvoices = (productData) => async (dispatch) => {
-  console.log("productData:", productData);
-  dispatch(updateProduct(productData));
-  dispatch(updateInvoiceProductDetails(productData));
+// Thunk to update product and invoices
+export const updateProductWithInvoices = (productData) => (dispatch) => {
+  dispatch(productsSlice.actions.updateProduct(productData));
+  dispatch(updateInvoiceProductDetails(productData)); // Trigger invoice update
 };
 
+export const { addProduct, updateProduct } = productsSlice.actions;
 export default productsSlice.reducer;

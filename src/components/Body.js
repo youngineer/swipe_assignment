@@ -77,8 +77,8 @@ const Body = () => {
         }
 
         if (jsonData) {
-          jsonData = JSON.parse(jsonData);
-          // console.log("Sending to validateJson with objType: ", typeof(jsonData));
+          // jsonData = JSON.parse(jsonData);
+          console.log("Sending to validateJson with objType: ", typeof(jsonData));
           await validateJsonObj(
             jsonData,
             validateCustomer,

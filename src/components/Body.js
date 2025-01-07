@@ -8,7 +8,7 @@ import ControlledPopup from "./ControlledPopup";
 import { addInvoice } from "../store/invoiceSlice";
 import { addProduct } from "../store/productSlice";
 import { addCustomer } from "../store/customerSlice";
-import { validateJsonObj, handleAiResponse } from "../services/handleAiOutput";
+import { validateJsonObj } from "../services/handleAiOutput";
 import {fetchApiResult, fetchApiResultJson } from "../services/fetchApiOutput.js"
 
 const fileTypes = ["JPG", "PNG", "PDF", "XLSX", "CSV"];
@@ -78,7 +78,7 @@ const Body = () => {
 
         if (jsonData) {
           jsonData = JSON.parse(jsonData);
-          console.log("Sending to validateJson with objType: ", typeof(jsonData));
+          // console.log("Sending to validateJson with objType: ", typeof(jsonData));
           await validateJsonObj(
             jsonData,
             validateCustomer,

@@ -27,27 +27,17 @@
 // export default store;
 
 import { configureStore } from '@reduxjs/toolkit';
-import customersReducer from './customerSlice';
-import productsReducer from './productSlice';
 import invoicesReducer from './invoiceSlice';
+import productsReducer from './productSlice';
+import customersReducer from './customerSlice';
 import apiKeyReducer from './apiKeySlice';
 
-const asyncDispatchMiddleware = storeAPI => next => action => {
-  if (typeof action === 'function') {
-    return action(storeAPI.dispatch, storeAPI.getState);
-  }
-  return next(action);
-};
-
-const store = configureStore({
+export const store = configureStore({
   reducer: {
-    customers: customersReducer,
-    products: productsReducer,
     invoices: invoicesReducer,
+    products: productsReducer,
+    customers: customersReducer,
     apiKey: apiKeyReducer
-  },
-  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(asyncDispatchMiddleware),
+  }
 });
-
-export default store;
 

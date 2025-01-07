@@ -1,122 +1,73 @@
 import { createSelector } from 'reselect';
 
-// Base selectors for each slice
-const selectCustomersState = state => state.customers;
-const selectProductsState = state => state.products;
-const selectInvoicesState = state => state.invoices;
+// Base selectors
+const getInvoicesState = state => state.invoices;
+const getProductsState = state => state.products;
+const getCustomersState = state => state.customers;
 
-// Memoized intermediate selectors for customers
-const selectCustomerIds = createSelector(
-  [selectCustomersState],
-  customers => customers.allIds
+// Memoized selectors
+export const selectAllInvoices = createSelector(
+  [getInvoicesState],
+  invoices => {
+    console.log("Invoices State:", invoices);
+    return invoices?.allIds?.map(id => invoices.getById[id]) || [];
+  }
 );
 
-const selectCustomerById = createSelector(
-  [selectCustomersState],
-  customers => customers.getById
+
+export const selectAllProducts = createSelector(
+  [getProductsState],
+  products => products.allIds.map(id => products.getById[id])
 );
 
-// Memoized intermediate selectors for products
-const selectProductIds = createSelector(
-  [selectProductsState],
-  products => products.allIds
+export const selectAllCustomers = createSelector(
+  [getCustomersState],
+  customers => customers.allIds.map(id => customers.getById[id])
 );
 
-const selectProductById = createSelector(
-  [selectProductsState],
-  products => products.getById
+export const selectInvoiceById = createSelector(
+  [getInvoicesState, (state, id) => id],
+  (invoices, id) => invoices.getById[id]
 );
 
-// Memoized intermediate selectors for invoices
-const selectInvoiceIds = createSelector(
-  [selectInvoicesState],
-  invoices => invoices.allIds
+export const selectProductById = createSelector(
+  [getProductsState, (state, id) => id],
+  (products, id) => products.getById[id]
 );
 
-const selectInvoiceById = createSelector(
-  [selectInvoicesState],
-  invoices => invoices.getById
+export const selectCustomerById = createSelector(
+  [getCustomersState, (state, id) => id],
+  (customers, id) => customers.getById[id]
 );
 
-// Final memoized selectors that combine the intermediate results
-export const selectCustomers = createSelector(
-  [selectCustomerIds, selectCustomerById],
-  (ids, byId) => ids.map(id => byId[id])
+export const selectInvoicesByCustomerId = createSelector(
+  [getInvoicesState, (state, customerId) => customerId],
+  (invoices, customerId) => {
+    const invoiceIds = invoices.customerMap[customerId] || [];
+    return invoiceIds.map(id => invoices.getById[id]);
+  }
 );
 
-export const selectProducts = createSelector(
-  [selectProductIds, selectProductById],
-  (ids, byId) => ids.map(id => byId[id])
+export const selectInvoicesByProductId = createSelector(
+  [getInvoicesState, (state, productId) => productId],
+  (invoices, productId) => {
+    const invoiceIds = invoices.productMap[productId] || [];
+    return invoiceIds.map(id => invoices.getById[id]);
+  }
 );
 
-export const selectInvoices = createSelector(
-  [selectInvoiceIds, selectInvoiceById],
-  (ids, byId) => ids.map(id => byId[id])
+export const selectCustomerWithInvoices = createSelector(
+  [selectCustomerById, selectInvoicesByCustomerId],
+  (customer, invoices) => ({
+    ...customer,
+    invoices
+  })
 );
 
-// Individual selectors for single items
-export const makeSelectCustomerById = () =>
-  createSelector(
-    [selectCustomerById, (_, id) => id],
-    (byId, id) => byId[id]
+export const selectProductWithInvoices = createSelector(
+  [selectProductById, selectInvoicesByProductId],
+  (product, invoices) => ({
+    ...product,
+    invoices
+  })
 );
-
-export const makeSelectProductById = () =>
-  createSelector(
-    [selectProductById, (_, id) => id],
-    (byId, id) => byId[id]
-);
-
-export const makeSelectInvoiceById = () =>
-  createSelector(
-    [selectInvoiceById, (_, id) => id],
-    (byId, id) => byId[id]
-);
-
-// Additional useful selectors for derived data
-export const selectTotalCustomers = createSelector(
-  [selectCustomerIds],
-  ids => ids.length
-);
-
-export const selectTotalProducts = createSelector(
-  [selectProductIds],
-  ids => ids.length
-);
-
-export const selectTotalInvoices = createSelector(
-  [selectInvoiceIds],
-  ids => ids.length
-);
-
-// import { createSelector } from "reselect";
-
-// const selectState = (state) => state.app;
-
-// // Customers
-// export const selectCustomers = createSelector(
-//   [selectState],
-//   (app) => app.customers.allIds.map((id) => app.customers.byId[id])
-// );
-
-// // Products
-// export const selectProducts = createSelector(
-//   [selectState],
-//   (app) => app.products.allIds.map((id) => app.products.byId[id])
-// );
-
-// // Invoices
-// export const selectInvoices = createSelector(
-//   [selectState],
-//   (app) =>
-//     app.invoices.allIds.map((id) => {
-//       const invoice = app.invoices.byId[id];
-//       const customer = app.customers.byId[invoice.customerId];
-//       const product = app.products.byId[invoice.productId];
-//       return {
-//         ...invoice,
-//         customerName: customer?.customerName,
-//         productName: product?.name,
-//       };
-//     })
-// );

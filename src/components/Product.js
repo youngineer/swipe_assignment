@@ -1,66 +1,81 @@
-
-import { DataGrid, GridActionsCellItem, GridRowModes, GridRowModesModel } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridRowModes } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
 import { useDispatch, useSelector } from 'react-redux';
-import { getProducts, updateProduct } from '../store/productSlice';
+import { updateProductWithInvoices } from '../store/productSlice';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { selectProducts } from '../store/selectors';
-import { useState } from 'react';
-// import { updateProduct } from '../store/appSlice';
+import { selectAllProducts } from '../store/selectors';
+import { useCallback, useState } from 'react';
 
 const Product = () => {
   const dispatch = useDispatch();
-  const rows = useSelector(selectProducts);
-  console.log("products:", rows)
+  const rows = useSelector(selectAllProducts);
+  console.log("rows fetched from the product tab:", rows);
   const [rowModesModel, setRowModesModel] = useState({});
+  const [editedRows, setEditedRows] = useState({});
 
   const handleEditClick = (id) => () => {
-    setRowModesModel((prev) => ({
+    const rowToEdit = rows.find(row => row.id === id);
+    setEditedRows(prev => ({
       ...prev,
-      [id]: { mode: GridRowModes.Edit },
+      [id]: { ...rowToEdit }
     }));
-  };
-
-  const handleCancelClick = (id) => () => {
-    setRowModesModel((prev) => ({
+    
+    setRowModesModel(prev => ({
       ...prev,
-      [id]: { mode: GridRowModes.View },
+      [id]: { mode: GridRowModes.Edit }
     }));
   };
 
   const handleSaveClick = (id) => () => {
-    console.log(id);
-    setRowModesModel((prev) => ({
+    setRowModesModel(prev => ({
       ...prev,
-      [id]: { mode: GridRowModes.View },
+      [id]: { mode: GridRowModes.View }
     }));
+  };
 
-    const updatedRow = rows.find((row) => row.id === id);
-    if (updatedRow) {
-      dispatch(updateProduct(updatedRow));
+  const handleCancelClick = (id) => () => {
+    setRowModesModel(prev => ({
+      ...prev,
+      [id]: { mode: GridRowModes.View }
+    }));
+    
+    if (editedRows[id]) {
+      dispatch(updateProductWithInvoices(editedRows[id]));
+      setEditedRows(prev => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
     }
   };
 
-  const handleRowEditStop = (params) => {
-    const { id, field, value } = params;
-    const updatedRow = rows.find((row) => row.id === id);
-    if (updatedRow) {
-      updatedRow[field] = value;
-      dispatch(updateProduct(updatedRow)); 
-    }
+  const processRowUpdate = (newRow) => {
+    const updatedRow = {
+      ...newRow,
+      priceWithTax: (newRow.unitPrice + newRow.tax) * newRow.quantity
+    };
+    dispatch(updateProductWithInvoices(updatedRow));
+    setEditedRows(prev => {
+      const newState = { ...prev };
+      delete newState[newRow.id];
+      return newState;
+    });
+    return updatedRow;
   };
 
+  const handleProcessRowUpdateError = useCallback((error) => {
+    console.error('Error updating row:', error);
+  }, []);
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 80 },
-    { field: 'name', headerName: 'Name', width: 180, editable: true },
+    { field: 'name', headerName: 'Product Name', width: 180, editable: true },
     { field: 'quantity', headerName: 'Quantity', type: 'number', width: 100, editable: true },
     { field: 'unitPrice', headerName: 'Unit Price', type: 'number', width: 120, editable: true },
     { field: 'tax', headerName: 'Tax', type: 'number', width: 100, editable: true },
-    { field: 'priceWithTax', headerName: 'Price With Tax', type: 'number', width: 160, editable: true },
+    { field: 'priceWithTax', headerName: 'Price with Tax', type: 'number', width: 140, editable: false },
     {
       field: 'actions',
       type: 'actions',
@@ -92,33 +107,25 @@ const Product = () => {
             label="Edit"
             onClick={handleEditClick(id)}
             key="edit"
-          />
+          />,
         ];
       },
     },
   ];
 
   return (
-    <Box
-      sx={{
-        height: 500,
-        width: '100%',
-        '& .actions': {
-          color: 'text.secondary',
-        },
-        '& .textPrimary': {
-          color: 'text.primary',
-        },
-      }}
-    >
+    <Box sx={{ height: 500, width: '100%' }}>
       <DataGrid
         rows={rows}
         columns={columns}
         editMode="row"
         rowModesModel={rowModesModel}
         onRowModesModelChange={setRowModesModel}
-        onRowEditStop={handleRowEditStop}
-        processRowUpdate={handleRowEditStop}
+        processRowUpdate={processRowUpdate}
+        onProcessRowUpdateError={handleProcessRowUpdateError}
+        slotProps={{
+          toolbar: { setRowModesModel },
+        }}
       />
     </Box>
   );

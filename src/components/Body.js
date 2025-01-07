@@ -1,19 +1,29 @@
 import React, { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
-import { fetchApiResult, fetchApiResultJson } from "../services/getAiOutput";
 import { useDispatch, useSelector } from "react-redux";
-import { checkExcelFile } from "../services/handleExcelFiles";
 import { setApiKey } from "../store/apiKeySlice";
-import EntityValidationPopup from "./EntityValidationPopup";
+import { validateCustomer, validateInvoice, validateProduct } from "../services/validation.js";
+import { checkExcelFile } from "../services/handleExcelFile";
+import ControlledPopup from "./ControlledPopup";
+import { addInvoice } from "../store/invoiceSlice";
+import { addProduct } from "../store/productSlice";
+import { addCustomer } from "../store/customerSlice";
+import { validateJsonObj, handleAiResponse } from "../services/handleAiOutput";
+import {fetchApiResult, fetchApiResultJson } from "../services/fetchApiOutput.js"
 
 const fileTypes = ["JPG", "PNG", "PDF", "XLSX", "CSV"];
 
 const Body = () => {
   const [fileList, setFileList] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const [popupData, setPopupData] = useState(null); 
-  const [popupEntityType, setPopupEntityType] = useState(""); 
-  const [json, setJson] = useState('');
+  const [popupData, setPopupData] = useState(null);
+  const [popupType, setPopupType] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [pendingDispatch, setPendingDispatch] = useState({
+    customers: [],
+    products: [],
+    invoices: []
+  });
   const dispatch = useDispatch();
   const apiKey = useSelector((state) => state.apiKey.key);
 
@@ -22,28 +32,96 @@ const Body = () => {
     dispatch(setApiKey(inputValue));
   };
 
-  const handleChange = (files) => {
-    console.log("Files received:", files);
+  const dispatchValidEntities = (entities) => {
+    const { customers, products, invoices } = entities;
+
+    customers.forEach((customer) => dispatch(addCustomer(customer)));
+    products.forEach((product) => dispatch(addProduct(product)));
+    invoices.forEach((invoice) => dispatch(addInvoice(invoice)));
+  };
+
+  const setPopupHandlers = (pendingValidation) => {
+    if (pendingValidation.customers.length > 0) {
+      setPopupType("customer");
+      setPopupData(pendingValidation.customers[0]);
+    } else if (pendingValidation.products.length > 0) {
+      setPopupType("product");
+      setPopupData(pendingValidation.products[0]);
+    } else if (pendingValidation.invoices.length > 0) {
+      setPopupType("invoice");
+      setPopupData(pendingValidation.invoices[0]);
+    } else {
+      setIsPopupOpen(false);
+      setPopupData(null);
+      setPopupType(null);
+    }
+
+    setPendingDispatch(pendingValidation);
+    setIsPopupOpen(true);
+  };
+
+  const handleChange = async (files) => {
     const filesArray = Array.isArray(files) ? files : Array.from(files);
     setFileList((prevList) => [...prevList, ...filesArray]);
 
-    filesArray.forEach((file) => {
-      const fileExtension = file.name.split(".").pop().toLowerCase();
-      if (["jpg", "png", "pdf"].includes(fileExtension)) {
-        setJson(fetchApiResult(file, apiKey, dispatch));
-      } else {
-        checkExcelFile(file).then((promisedData) => {
-          console.log(promisedData);
-          setJson(fetchApiResultJson(promisedData, apiKey, dispatch));
-        });
-      };
+    for (const file of filesArray) {
+      try {
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+        let jsonData = null;
 
-      if(json){
-        console.log(json);
+        if (["jpg", "png", "pdf"].includes(fileExtension)) {
+          jsonData = await fetchApiResult(file, apiKey);
+        } else {
+          const excelData = await checkExcelFile(file);
+          jsonData = await fetchApiResultJson(excelData, apiKey);
+        }
+
+        if (jsonData) {
+          jsonData = JSON.parse(jsonData);
+          console.log("Sending to validateJson with objType: ", typeof(jsonData));
+          await validateJsonObj(
+            jsonData,
+            validateCustomer,
+            validateProduct,
+            validateInvoice,
+            dispatchValidEntities,
+            setPopupHandlers
+          );
+        }
+      } catch (error) {
+        console.error("Error processing file:", error);
       }
-    });
+    }
   };
 
+  const handlePopupSubmit = (formData) => {
+    let validatedEntity;
+    const currentPending = { ...pendingDispatch };
+
+    switch (popupType) {
+      case "customer":
+        const { validatedCustomer } = validateCustomer(formData);
+        validatedEntity = validatedCustomer;
+        currentPending.customers.shift();
+        dispatch(addCustomer(validatedEntity));
+        break;
+      case "product":
+        const { validatedProduct } = validateProduct(formData);
+        validatedEntity = validatedProduct;
+        currentPending.products.shift();
+        dispatch(addProduct(validatedEntity));
+        break;
+      case "invoice":
+        const { validatedInvoice } = validateInvoice(formData);
+        validatedEntity = validatedInvoice;
+        currentPending.invoices.shift();
+        dispatch(addInvoice(validatedEntity));
+        break;
+    }
+
+    setPendingDispatch(currentPending);
+    setPopupHandlers(currentPending);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">
@@ -92,6 +170,19 @@ const Body = () => {
           )}
         </div>
       </div>
+
+      {isPopupOpen && popupData && (
+        <ControlledPopup
+          type={popupType}
+          initialData={popupData}
+          onSubmit={handlePopupSubmit}
+          onClose={() => {
+            setIsPopupOpen(false);
+            setPopupData(null);
+            setPopupType(null);
+          }}
+        />
+      )}
     </div>
   );
 };

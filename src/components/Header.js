@@ -22,21 +22,21 @@ const Header = () => {
               Home
             </Link>
             <Link
-              to="/invoicePage"
+              to="/invoices"
               className="link link-underline"
               style={{ color: "rgb(235, 211, 248)" }}
             >
               Invoices
             </Link>
             <Link
-              to="/productsPage"
+              to="/products"
               className="link link-underline"
               style={{ color: "rgb(235, 211, 248)" }}
             >
               Products
             </Link>
             <Link
-              to="/customerPage"
+              to="/customers"
               className="link link-underline"
               style={{ color: "rgb(235, 211, 248)" }}
             >

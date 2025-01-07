@@ -7,7 +7,7 @@ import Invoice from "./components/Invoice";
 import Customers from "./components/Customers";
 import Product from "./components/Product";
 import { Provider } from "react-redux";
-import store from "../src/store/store";
+import {store} from "../src/store/store";
 
 const AppLayout = () => {
   return (
@@ -27,9 +27,9 @@ const appRouter = createBrowserRouter(
       element: <AppLayout />,
       children: [
         { path: "/", element: <Body /> },
-        { path: "/invoicePage", element: <Invoice /> },
-        { path: "/productsPage", element: <Product /> },
-        { path: "/customerPage", element: <Customers /> },
+        { path: "/invoices", element: <Invoice /> },
+        { path: "/products", element: <Product /> },
+        { path: "/customers", element: <Customers /> },
       ],
     },
   ],

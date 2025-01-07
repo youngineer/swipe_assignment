@@ -1,4 +1,3 @@
-// import * as React from 'react';
 import { DataGrid, GridActionsCellItem, GridRowModes } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,22 +5,15 @@ import { updateInvoice } from '../store/invoiceSlice';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
-import { selectInvoices } from '../store/selectors';
 import { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-// import { updateInvoice } from '../store/appSlice'; // Fixed import path
-import { selectInvoices } from '../store/selectors';
-import { useState } from 'react';
+import { selectAllInvoices } from '../store/selectors';
 
 const Invoice = () => {
   const dispatch = useDispatch();
-  const rows = useSelector(selectInvoices);
+  const rows = useSelector(selectAllInvoices);
+  console.log("rows fetched from the invoices tab:", rows);
   const [rowModesModel, setRowModesModel] = useState({});
   const [editedRows, setEditedRows] = useState({});
-  console.log("Invoices:", rows)
-  rows.forEach(row => {
-    console.log(row)
-  });
 
   const handleEditClick = (id) => () => {
     const rowToEdit = rows.find(row => row.id === id);
@@ -51,7 +43,6 @@ const Invoice = () => {
     
     if (editedRows[id]) {
       dispatch(updateInvoice(editedRows[id]));
-      dispatch(upd)
       setEditedRows(prev => {
         const newState = { ...prev };
         delete newState[id];
@@ -61,13 +52,17 @@ const Invoice = () => {
   };
 
   const processRowUpdate = (newRow) => {
-    dispatch(updateInvoice(newRow));
+    const updatedRow = {
+      ...newRow,
+      totalPrice: (newRow.price + newRow.tax) * newRow.quantity
+    };
+    dispatch(updateInvoice(updatedRow));
     setEditedRows(prev => {
       const newState = { ...prev };
       delete newState[newRow.id];
       return newState;
     });
-    return newRow;
+    return updatedRow;
   };
 
   const handleProcessRowUpdateError = useCallback((error) => {
@@ -75,7 +70,7 @@ const Invoice = () => {
   }, []);
 
   const columns = [
-    { field: 'id', headerName: 'ID', width: 80 },
+    // { field: 'id', headerName: 'ID', width: 80 },
     { field: 'serialNumber', headerName: 'Serial Number', width: 140, editable: false },
     { field: 'customerName', headerName: 'Customer Name', width: 180, editable: true },
     { field: 'productName', headerName: 'Product Name', width: 180, editable: true },

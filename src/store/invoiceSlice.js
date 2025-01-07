@@ -1,124 +1,122 @@
-// import { createSlice } from '@reduxjs/toolkit';
-
-// const initialState = {
-//   getById: {},
-//   allIds: [],
-//   nextId: 1
-// };
-
-// const invoicesSlice = createSlice({
-//   name: 'invoices',
-//   initialState,
-//   reducers: {
-//     addInvoice: (state, action) => {
-//       const {
-//         serialNumber,
-//         customerName,
-//         productName,
-//         quantity,
-//         price,
-//         tax,
-//         totalPrice,
-//         date
-//       } = action.payload;
-    
-//       const id = state.nextId;
-    
-//       state.getById[id] = {
-//         id,
-//         serialNumber,
-//         customerName,
-//         productName,
-//         quantity,
-//         price,
-//         tax,
-//         totalPrice,
-//         date
-//       };
-    
-//       state.allIds.push(id);
-//       state.nextId += 1;
-//     },
-//     updateInvoice: (state, action) => {
-//       const { id, ...updates } = action.payload;
-//       if (state.getById[id]) {
-//         state.getById[id] = {
-//           ...state.getById[id],
-//           ...updates
-//         };
-//       }
-//     }
-//   }
-// });
-
-// export const {
-//   addInvoice,
-//   updateInvoice
-// } = invoicesSlice.actions;
-
-// export default invoicesSlice.reducer;
-
-
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+const initialInvoiceState = {
   getById: {},
   allIds: [],
   nextId: 1,
+  productMap: {},
+  customerMap: {},
 };
 
 const invoicesSlice = createSlice({
   name: 'invoices',
-  initialState,
+  initialState: initialInvoiceState,
   reducers: {
     addInvoice: (state, action) => {
-      const { serialNumber, customerName, productName, customerId, productId, quantity, price, tax, totalPrice, date } = action.payload;
-      const id = state.nextId;
-
-      state.getById[id] = {
-        id,
-        serialNumber,customerName, productName,
-        customerId,
-        productId,
+      const {
+        serialNumber,
+        customerName,
+        productName,
         quantity,
         price,
         tax,
         totalPrice,
         date,
+        customerId,
+        productId
+      } = action.payload;
+
+      const id = state.nextId;
+
+      state.getById[id] = {
+        id,
+        serialNumber,
+        customerName,
+        productName,
+        quantity,
+        price,
+        tax,
+        totalPrice,
+        date,
+        customerId,
+        productId
       };
 
       state.allIds.push(id);
       state.nextId += 1;
+
+      // Update relationship maps
+      if (!state.customerMap[customerId]) {
+        state.customerMap[customerId] = [];
+      }
+      state.customerMap[customerId].push(id);
+
+      if (!state.productMap[productId]) {
+        state.productMap[productId] = [];
+      }
+      state.productMap[productId].push(id);
     },
-    updateInvoice: (state, action) => {
-      const { id, ...updates } = action.payload;
-      if (state.getById[id]) {
-        state.getById[id] = {
-          ...state.getById[id],
-          ...updates,
-        };
+
+    updateInvoiceCustomerName: (state, action) => {
+      console.log("customers received to invoice:", action.payload);
+      const { id, customerName } = action.payload;
+      if (state.customerMap[id]) {
+        state.customerMap[id].forEach(invoiceId => {
+          if (state.getById[invoiceId]) {
+            console.log('state.getById[invoiceId].customerName:', state.getById[invoiceId].customerName)
+            state.getById[invoiceId].customerName = customerName;
+          }
+        });
       }
     },
-    updateInvoicesForProductChange: (state, action) => {
-      const { productId, updatedProduct } = action.payload;
-      Object.values(state.getById).forEach(invoice => {
-        if (invoice.productId === productId) {
-          invoice.price = updatedProduct.unitPrice;
-          invoice.tax = updatedProduct.tax;
-          invoice.totalPrice = (updatedProduct.unitPrice + updatedProduct.tax) * invoice.quantity;
+
+    updateInvoiceProductDetails: (state, action) => {
+      console.log("products received to invoice:", action.payload);
+      const { productId, name, unitPrice, tax } = action.payload;
+      console.log('productId, name, unitPrice, tax:', productId, name, unitPrice, tax );
+      if (state.productMap[productId]) {
+        state.productMap[productId].forEach(invoiceId => {
+          if (state.getById[invoiceId]) {
+            const invoice = state.getById[invoiceId];
+            invoice.productName = name;
+            invoice.price = unitPrice;
+            invoice.tax = tax;
+            invoice.totalPrice = (unitPrice + tax) * invoice.quantity;
+          }
+        });
+      }
+    },
+
+    updateInvoice: (state, action) => {
+      const { id, updates } = action.payload;
+
+      if (!state.getById[id]) {
+        console.warn(`Invoice with ID ${id} does not exist.`);
+        return;
+      }
+
+      const invoice = state.getById[id];
+
+      // Apply updates to the invoice
+      Object.keys(updates).forEach((key) => {
+        if (invoice.hasOwnProperty(key)) {
+          invoice[key] = updates[key];
         }
       });
+
+      // If quantity, price, or tax was updated, recalculate totalPrice
+      if (updates.quantity || updates.price || updates.tax) {
+        invoice.totalPrice = (invoice.price + invoice.tax) * invoice.quantity;
+      }
     },
-    updateInvoicesForCustomerChange: (state, action) => {
-      const { customerId, updatedCustomer } = action.payload;
-      Object.values(state.getById).forEach(invoice => {
-        if (invoice.customerId === customerId) {
-          invoice.customerName = updatedCustomer.customerName;
-        }
-      });
-    },
-  },
+  }
 });
 
-export const { addInvoice, updateInvoice, updateInvoicesForProductChange, updateInvoicesForCustomerChange } = invoicesSlice.actions;
+export const {
+  addInvoice,
+  updateInvoiceCustomerName,
+  updateInvoiceProductDetails,
+  updateInvoice,
+} = invoicesSlice.actions;
+
 export default invoicesSlice.reducer;

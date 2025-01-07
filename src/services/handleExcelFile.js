@@ -10,6 +10,7 @@ const formatKey = (key) => {
 };
 
 const handleExcelFile = async (file) => {
+  console.log("inside handleExcelFile")
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
@@ -48,6 +49,7 @@ const handleExcelFile = async (file) => {
 };
 
 export const checkExcelFile = async (file) => {
+  console.log("inside checkExcelFile")
   const fileExtension = file.name.split('.').pop().toLowerCase();
   
   if (!['xlsx', 'csv'].includes(fileExtension)) {
@@ -56,7 +58,6 @@ export const checkExcelFile = async (file) => {
   
   try {
     const fileContent = await handleExcelFile(file);
-    // console.log('Parsed JSON Data (without duplicates):', fileContent);
     return fileContent;
   } catch (error) {
     console.error('Error processing excel file:', error);

@@ -48,10 +48,6 @@ Check out the deployed application here: [Live App](https://swipe-assignment-kar
    ```
    The app will be available at `http://localhost:1234`.
 
-## Screenshots
-
-_Add screenshots of the app showcasing its features._
-
 ## Contributions
 
 Feel free to fork this repository and submit pull requests for improvements.

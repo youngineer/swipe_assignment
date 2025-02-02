@@ -26,7 +26,8 @@ A **React.js** application for automating data extraction, processing, and manag
 
 ## Live Demo
 
-Check out the deployed application here: [Live App](https://swipe-assignment-kartiks.vercel.app)
+Check out the deployed application here: [Live App](https://invoice-management-kartiks.vercel.app/)
+Check out the demo of the application here: [Demo video](https://drive.google.com/file/d/1cQnrz1_WSP35wJ4K0qxxovhlR6BlM1n8/view?usp=drive_link)
 
 ## Installation
 
